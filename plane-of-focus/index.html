@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0b0f1a" />
+  <title>The Plane of Focus — Interactive Camera Lens Lab</title>
+  <meta name="description" content="An interactive 3D lens lab that explains camera focus: focus distance, aperture and depth of field on a 50 mm lens." />
+  <meta property="og:title" content="The Plane of Focus · Waggles" />
+  <meta property="og:description" content="An interactive 3D lens lab that explains camera focus." />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230b0f1a'/%3E%3Ccircle cx='16' cy='16' r='10' fill='none' stroke='%237fe3ff' stroke-width='2.4'/%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./src/styles.css" />
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body>
+  <div id="app">
+    <main id="world" aria-label="Interactive 3D optical bench with cutaway camera lens, ground glass image plane, and miniature valley diorama">
+      <div id="loading">Polishing the glass…</div>
+    </main>
+    <div class="vignette"></div>
+
+    <!-- 3D Floating Pill Labels Container -->
+    <div id="labels-layer" aria-hidden="true"></div>
+
+    <!-- Left Info & Telemetry Panel -->
+    <aside class="side">
+      <div class="brand">
+        <h1>
+          <span>THE PLANE</span>
+          <b>OF FOCUS</b>
+        </h1>
+        <small>Everyone knows when a photo is blurry. Almost nobody has seen the exact plane where it turns sharp. Turn the focus ring and watch it move.</small>
+      </div>
+
+      <div class="stats">
+        <div class="stat hot">
+          <i>FOCUS</i>
+          <b id="s-focus">54 cm</b>
+        </div>
+        <div class="stat">
+          <i>APERTURE</i>
+          <b id="s-ap">f/2</b>
+        </div>
+        <div class="stat">
+          <i>SHARP ZONE</i>
+          <b id="s-dof">1.5 cm</b>
+        </div>
+      </div>
+
+      <p class="why" id="why" aria-live="polite"></p>
+    </aside>
+
+    <!-- Top-Right Interactive Control Card -->
+    <section class="card ctl" aria-label="Optical Controls">
+      <div class="r1">
+        <div class="grp">
+          <span class="lab">FOCUS <em>drag the ring · 1 2 3</em></span>
+          <div class="seg" id="seg-focus" role="group" aria-label="Focus preset">
+            <button type="button" data-f="0">Foreground</button>
+            <button type="button" data-f="1" class="on">Middle</button>
+            <button type="button" data-f="2">Background</button>
+          </div>
+        </div>
+        <div class="grp slide-g">
+          <span class="lab">DISTANCE <em id="slide-v">54 cm</em></span>
+          <div class="slide" id="slide" role="slider" tabindex="0" aria-label="Focus distance" aria-valuemin="30" aria-valuemax="160" aria-valuenow="54">
+            <div class="tr"></div>
+            <div class="dz" id="slide-dz"></div>
+            <div class="fl" id="slide-fl"></div>
+            <div class="tk" id="tk-0" title="Foreground (37 cm)"></div>
+            <div class="tk" id="tk-1" title="Middle (54 cm)"></div>
+            <div class="tk" id="tk-2" title="Background (84 cm)"></div>
+            <div class="kn" id="slide-kn"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="r2">
+        <div class="grp">
+          <span class="lab">APERTURE <em>F</em></span>
+          <div class="seg" id="seg-ap" role="group" aria-label="Aperture">
+            <button type="button" data-n="2" class="on" title="Wide open (f/2)">f/2</button>
+            <button type="button" data-n="5.6" title="Medium aperture (f/5.6)">f/5.6</button>
+            <button type="button" data-n="16" title="Stopped down (f/16)">f/16</button>
+          </div>
+        </div>
+        <div class="grp">
+          <span class="lab">LENS <em>X</em></span>
+          <div class="seg" id="seg-ex" role="group" aria-label="Lens barrel housing">
+            <button type="button" data-e="0">Assembled</button>
+            <button type="button" data-e="1" class="on">Exploded</button>
+          </div>
+        </div>
+        <div class="tools">
+          <button type="button" id="cine" title="Cycle cinematic cameras (C)">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M4 6h11a2 2 0 0 1 2 2v2l4-2.5v9L17 14v2a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z" />
+            </svg>
+          </button>
+          <button type="button" id="how" title="How it works (?)">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm1 15h-2v-2h2zm2.1-7.7-.9.9A3 3 0 0 0 13 13h-2v-.5a4 4 0 0 1 1.2-2.8l1.2-1.3A2 2 0 1 0 10 7H8a4 4 0 1 1 7.1 2.3z" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Bottom-Right Quick Actions -->
+    <div class="br">
+      <div class="brb">
+        <button type="button" class="icb" id="share" aria-label="Reset camera view" title="Reset camera view (R)">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 5V2L8 6l4 4V7c3.3 0 6 2.7 6 6 0 1-.3 2-.7 2.8l1.5 1.5C19.6 16 20 14.6 20 13c0-4.4-3.6-8-8-8zm-6.8.7L3.7 7.2C4.4 8.5 4 9.9 4 11.5c0 4.4 3.6 8 8 8v3l4-4-4-4v3c-3.3 0-6-2.7-6-6 0-1 .3-2 .7-2.8z" />
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <div id="tip" aria-hidden="true"></div>
+    <div id="ui-hint" aria-hidden="true"></div>
+
+    <!-- How It Works Modal Dialog -->
+    <dialog id="info">
+      <button type="button" id="close" aria-label="Close">×</button>
+      <h2>Where a photo turns sharp</h2>
+      <p>A lens can only bring <b>one distance</b> to a perfect point. Everything at that distance forms a thin sheet in the world: the <b>plane of focus</b>. Here it is the glowing sheet sweeping through the valley, and the bright line where it cuts the trees, the cabin and the mountains.</p>
+      <h3>Why the rest goes soft</h3>
+      <p>Light from any point spreads out, passes through the whole opening of the lens and is bent back together. From a point <b>on</b> the plane, the rays meet exactly on the image plane: a point. From anything nearer or farther they meet in front of it or behind it, so they arrive as a small disc, the <b>circle of confusion</b>. That disc is the blur. The rings on the glass at the back show how big it is for the tree, the cabin and the peak.</p>
+      <h3>The focus ring</h3>
+      <p>Turning the ring slides the glass forward or back inside the barrel. Closer subjects focus farther behind the lens, so the glass moves out; far ones focus closer to it, so it moves in. Drag the ring, the slider on the console or the one in the card.</p>
+      <h3>The aperture</h3>
+      <p>The iris is the adjustable hole in the middle of the lens. Wide open (<b>f/2</b>) the cone of light is fat, the discs are big and only a thin slice is sharp. Stopped down (<b>f/16</b>) the cone is thin, every disc shrinks, and the sharp zone grows deep. That is why landscapes are shot at f/11 and portraits at f/2.</p>
+      <h3>Upside down?</h3>
+      <p>Yes. Every lens projects the world upside down, and it is drawn that way on the glass. The screens on the console flip it back, the way your camera does.</p>
+      <h3>Keys</h3>
+      <p>
+        <code>1</code> <code>2</code> <code>3</code> focus on foreground, middle, background ·
+        <code>[</code> <code>]</code> nudge focus ·
+        <code>F</code> aperture ·
+        <code>X</code> assembled or exploded ·
+        <code>C</code> cinematic cameras ·
+        <code>R</code> reset the view ·
+        <code>/</code> hide the interface ·
+        drag to orbit · right-drag to pan · scroll to zoom ·
+        <code>W</code><code>A</code><code>S</code><code>D</code> to move, <code>Q</code> <code>E</code> to turn.
+      </p>
+      <p style="font-size:12px;color:#8f98b3">Numbers are for a 50 mm lens on a full-frame camera; the valley is about 54 cm away.</p>
+    </dialog>
+  </div>
+
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>
