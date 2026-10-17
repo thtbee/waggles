@@ -80,6 +80,18 @@ Recreation of [@RyanSael](https://x.com/RyanSael)'s lens demo.
 | **Folder** | [`plane-of-focus/`](plane-of-focus/) |
 | **Built with** | Three.js, ES modules, no build step |
 
+### 006 · Entity
+
+<a href="https://thtbee.github.io/waggles/entity/"><img src="assets/previews/entity.webp" alt="A luminous figure floating above still water at night" width="100%"></a>
+
+A meditative real-time scene. A luminous figure hovers above still, reflective water, surrounded by rings, drifting petals and floating diyas. Awaken it and it settles from the unbound into padmasana. Touch the water to send ripples, or hold on the figure to awaken it.
+
+| | |
+| --- | --- |
+| **Play** | [thtbee.github.io/waggles/entity](https://thtbee.github.io/waggles/entity/) |
+| **Folder** | [`entity/`](entity/) |
+| **Built with** | Three.js, Web Audio, no build step |
+
 ---
 
 ## Behind the demos
@@ -99,6 +111,7 @@ waggles/
 ├── kestrel-k1/       Demo 003
 ├── skyward-pagoda/   Demo 004
 ├── plane-of-focus/   Demo 005
+├── entity/           Demo 006
 └── tools/serve.py    Local server
 ```
 

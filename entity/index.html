@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Entity</title>
+<meta name="description" content="A meditative real-time scene: a luminous figure above still water, moving from the unbound to stillness." />
+<meta property="og:title" content="Entity · Waggles" />
+<meta property="og:description" content="A meditative real-time scene: a luminous figure above still water." />
+<link rel="icon" href="data:," />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=Tiro+Devanagari+Sanskrit&display=swap" rel="stylesheet" />
+<style>
+  :root { --ink: rgba(255, 236, 200, 0.82); --dim: rgba(255, 236, 200, 0.38); }
+  html, body { margin: 0; height: 100%; background: #050505; overflow: hidden; }
+  body { font-family: 'Cormorant Garamond', Georgia, serif; color: var(--ink); cursor: crosshair; user-select: none; -webkit-user-select: none; }
+  canvas { display: block; position: fixed; inset: 0; width: 100%; height: 100%; touch-action: none; }
+
+  #veil { position: fixed; inset: 0; background: #000; z-index: 10; display: grid; place-items: center; transition: opacity 2.6s ease; }
+  #veil.gone { opacity: 0; pointer-events: none; }
+  #veil .mark { font-family: 'Tiro Devanagari Sanskrit', serif; font-size: 42px; color: rgba(255, 210, 140, 0.75); letter-spacing: 0.1em; animation: breathe 3s ease-in-out infinite; }
+  #veil .sub { margin-top: 14px; font-size: 13px; letter-spacing: 0.5em; text-transform: uppercase; color: var(--dim); text-align: center; }
+  @keyframes breathe { 0%,100% { opacity: .35 } 50% { opacity: 1 } }
+
+  #ui { position: fixed; inset: 0; pointer-events: none; z-index: 5; transition: opacity 1.2s ease; }
+  #ui.hidden { opacity: 0; }
+  .corner { position: absolute; pointer-events: auto; }
+  #title { left: 32px; top: 26px; font-weight: 300; letter-spacing: 0.55em; font-size: 13px; text-transform: uppercase; color: var(--dim); }
+  #title b { display: block; font-family: 'Tiro Devanagari Sanskrit', serif; font-weight: 400; letter-spacing: 0.15em; font-size: 22px; color: var(--ink); margin-bottom: 6px; text-transform: none; }
+  #controls { right: 26px; top: 22px; display: flex; gap: 10px; }
+  #controls button, #awaken { font: inherit; background: rgba(20, 16, 10, 0.25); color: var(--ink); border: 1px solid rgba(255, 220, 160, 0.22); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); cursor: pointer; transition: border-color .4s, background .4s, color .4s; }
+  #controls button { width: 40px; height: 40px; border-radius: 50%; font-size: 15px; display: grid; place-items: center; }
+  #controls button:hover, #awaken:hover { border-color: rgba(255, 220, 160, 0.6); background: rgba(60, 45, 20, 0.35); }
+  #awaken { left: 50%; bottom: 34px; transform: translateX(-50%); padding: 12px 34px; border-radius: 40px; letter-spacing: 0.5em; text-transform: uppercase; font-size: 13px; padding-right: 28px; }
+  #awaken:disabled { opacity: .35; cursor: default; }
+  #hint { left: 32px; bottom: 30px; font-size: 13px; line-height: 1.9; letter-spacing: 0.12em; color: var(--dim); font-style: italic; }
+  #hint kbd { font-family: inherit; font-style: normal; border: 1px solid rgba(255,220,160,.2); border-radius: 4px; padding: 0 6px; margin-right: 6px; }
+  #holdring { position: fixed; width: 64px; height: 64px; margin: -32px 0 0 -32px; pointer-events: none; z-index: 6; opacity: 0; transition: opacity .25s; }
+  #holdring.on { opacity: 1; }
+  body.zen { --ink: rgba(225, 240, 245, 0.85); --dim: rgba(205, 225, 235, 0.42); }
+  body.zen #controls button, body.zen #awaken { border-color: rgba(200, 230, 240, 0.22); background: rgba(10, 25, 35, 0.25); }
+
+  @media (max-width: 640px) {
+    #title { left: 16px; top: 16px; } #controls { right: 16px; top: 14px; } #hint { display: none; }
+    #awaken { bottom: 22px; letter-spacing: 0.35em; }
+  }
+</style>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"
+} }
+</script>
+</head>
+<body>
+  <div id="veil"><div><div class="mark">ॐ</div><div class="sub">entity</div></div></div>
+  <div id="ui">
+    <div id="title" class="corner"><b>अहं ब्रह्मास्मि</b><span id="stateName">the unbound</span></div>
+    <div id="controls" class="corner">
+      <button id="btnSound" title="Sound (M)">♪</button>
+      <button id="btnFull" title="Fullscreen (F)">⛶</button>
+    </div>
+    <div id="hint" class="corner">
+      drag to orbit · scroll to approach<br/>
+      touch the water · hold on the figure<br/>
+      <kbd>space</kbd>transition <kbd>H</kbd>hide <kbd>F</kbd>fullscreen
+    </div>
+    <button id="awaken" class="corner">Awaken</button>
+  </div>
+  <svg id="holdring" viewBox="0 0 64 64"><circle cx="32" cy="32" r="26" fill="none" stroke="rgba(255,225,170,.18)" stroke-width="1.5"/><circle id="holdarc" cx="32" cy="32" r="26" fill="none" stroke="rgba(255,225,170,.95)" stroke-width="1.5" stroke-dasharray="163.4" stroke-dashoffset="163.4" transform="rotate(-90 32 32)"/></svg>
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>
